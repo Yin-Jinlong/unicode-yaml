@@ -1,5 +1,7 @@
 project(node CXX)
 
+test_dir(get get/main.cpp)
+
 test_dir(new
         new/main.cpp
 )
