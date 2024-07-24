@@ -59,20 +59,20 @@ namespace UYAML {
 
         explicit Node(const std::vector<Node<C> *> list) {
             type = ValueType::List;
-            value = new Value<C>(std::vector<Node<C> *>());
+            value = new Value<C>(new std::vector<Node<C> *>());
             for (auto &i: list) {
                 if (i)
-                    value->list.push_back(i);
+                    value->list->push_back(i);
             }
-            value->list.shrink_to_fit();
+            value->list->shrink_to_fit();
         }
 
         explicit Node(const std::map<str<C>, Node<C> *> &obj) {
             type = ValueType::Object;
-            value = new Value<C>(std::map<str<C>, Node<C> *>());
+            value = new Value<C>(new std::map<str<C>, Node<C> *>());
             for (auto &i: obj) {
                 if (i.second)
-                    value->obj[i.first] = i.second;
+                    value->obj->at(i.first) = i.second;
             }
         }
 
@@ -92,13 +92,15 @@ namespace UYAML {
 
         ~Node() {
             if (type == ValueType::List) {
-                for (auto &i: value->list) {
+                for (auto &i: *value->list) {
                     delete i;
                 }
+                delete value->list;
             } else if (type == ValueType::Object) {
-                for (auto &i: value->obj) {
+                for (auto &i: *value->obj) {
                     delete i.second;
                 }
+                delete value->obj;
             }
             delete value;
         }
@@ -151,10 +153,10 @@ namespace UYAML {
          * @throw std::runtime_error 如果不是Object类型
          * @throw std::invalid_argument 如果key为空
          */
-        Node<C> &get(const str<C> &key) {
+        Node<C> *get(const str<C> &key) {
             if (type == ValueType::Null) {
                 type = ValueType::Object;
-                value = new Value<C>(std::map<str<C>, Node<C> *>());
+                value = new Value<C>(new std::map<str<C>, Node<C> *>());
             } else if (type != ValueType::Object)
                 throw std::runtime_error("not a object");
 
@@ -170,10 +172,10 @@ namespace UYAML {
             if (k.empty())
                 goto bad_arg;
 
-            if (map.find(key) == map.end()) {
-                map[key] = new Node();
+            if (map->find(key) == map->end()) {
+                map->insert(std::make_pair(key, new Node()));
             }
-            return *map[key];
+            return map->at(key);
             bad_arg:
             throw std::invalid_argument("bad key");
         }
@@ -185,18 +187,18 @@ namespace UYAML {
          * @throw std::runtime_error 如果不是List类型
          * @throw std::out_of_range 如果下标越界
          */
-        Node<C> &get(int index) {
+        Node<C> *get(int index) {
             if (type == ValueType::Null) {
                 type = ValueType::List;
-                value = new Value<C>(std::vector<Node<C> *>());
+                value = new Value<C>(new std::vector<Node<C> *>());
                 throw std::runtime_error("empty list");
             } else if (type != ValueType::List)
                 throw std::runtime_error("not a list");
             auto list = value->list;
-            int size = list.size();
+            int size = list->size();
             if (index <= -size || index >= size)
                 throw std::out_of_range("index out of range");
-            return index >= 0 ? *list[index] : *list[size + index];
+            return index >= 0 ? list->at(index) : list->at(size + index);
         }
 
         /**
@@ -210,7 +212,7 @@ namespace UYAML {
         }
 
         template<typename K>
-        Node<C> &operator[](K key) noexcept {
+        Node<C> *operator[](K key) noexcept {
             return as_if_get<C, K>(*this)[key];
         }
     };
