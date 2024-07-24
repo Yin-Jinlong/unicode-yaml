@@ -8,3 +8,4 @@
 #include "chars/node-u8char-impl.h"
 #include "chars/node-u16char-impl.h"
 #include "chars/node-u32char-impl.h"
+#include "parser.h"

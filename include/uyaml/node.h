@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <locale>
 #include "def.h"
+#include "list"
+#include "parser.h"
 
 namespace UYAML {
 
@@ -20,6 +22,49 @@ namespace UYAML {
     protected:
         explicit Node(ValueType t) {
             type = t;
+        }
+
+        static std::exception error_line(const char *msg, int line) {
+            return std::runtime_error(std::format("{} as line {}", msg, line));
+        }
+
+        void convert2obj() {
+            if (type != ValueType::Null)
+                return;
+            type = ValueType::Object;
+            value = new Value<C>(new std::map<str<C>, Node<C> *>());
+        }
+
+        void convert2list() {
+            if (type != ValueType::Null)
+                return;
+            type = ValueType::List;
+            value = new Value<C>(new std::vector<Node<C> *>());
+        }
+
+        void parse(std::list<str<C>> lines, int row) {
+            if (type != ValueType::Null && type != ValueType::Object)
+                throw std::runtime_error("not Object node could not have named child node");
+            if (type == ValueType::Null) {
+                convert2obj();
+            }
+            while (lines.size()) {
+                row++;
+                auto line = lines.front();
+                lines.pop_front();
+                int pi = parser_trim_start(line) / 2;
+                if (line.empty() || line[0] == '#') // 空行
+                    continue;
+                if (pi)
+                    throw error_line("bad indent", row);
+                str<C> k, v;
+                if (!parser_split_kv(line, k, v))
+                    throw error_line("bad key-value", row);
+                if (v.empty())
+                    throw std::runtime_error("new line value not supported yet");
+
+                value->obj->insert(std::pair(k, new Node<C>(v)));
+            }
         }
 
     public:
@@ -155,8 +200,7 @@ namespace UYAML {
          */
         Node<C> *get(const str<C> &key) {
             if (type == ValueType::Null) {
-                type = ValueType::Object;
-                value = new Value<C>(new std::map<str<C>, Node<C> *>());
+                convert2obj();
             } else if (type != ValueType::Object)
                 throw std::runtime_error("not a object");
 
@@ -189,8 +233,7 @@ namespace UYAML {
          */
         Node<C> *get(int index) {
             if (type == ValueType::Null) {
-                type = ValueType::List;
-                value = new Value<C>(new std::vector<Node<C> *>());
+                convert2list();
                 throw std::runtime_error("empty list");
             } else if (type != ValueType::List)
                 throw std::runtime_error("not a list");
@@ -215,5 +258,16 @@ namespace UYAML {
         Node<C> *operator[](K key) noexcept {
             return as_if_get<C, K>(*this)[key];
         }
+
+        void Parse(const str<C> &text) {
+            if (type != ValueType::Null)
+                throw std::runtime_error("could not run parse on not a null node");
+            std::list<str<C>> lines;
+            str<C> s = text, line;
+            while (parser_get_line(s, line))
+                lines.push_back(str<C>(line.begin(), line.end()));
+            parse(lines, 0);
+        }
+
     };
 }
