@@ -57,10 +57,12 @@ namespace UYAML {
             return true;
         }
 
-        static bool str_cmp(const str<C> &s, const char *tgt) {
-            for (int i = 0; i < s.length(); ++i) {
-                if (tgt[i] != s[i])
+        static bool to_ascii_cstr(const str<C> &s, str<char> &out) {
+            out.clear();
+            for (auto c: s) {
+                if (c < 0 || c > 127)
                     return false;
+                out += c;
             }
             return true;
         }
@@ -94,6 +96,8 @@ namespace UYAML {
         }
 
         static bool parse_float(const str<C> &s, double &out) {
+            static std::regex reg("^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$");
+
             out = 0;
             str<char> cs;
             for (auto c: s) {
@@ -105,7 +109,6 @@ namespace UYAML {
                 } else
                     return false;
             }
-            std::regex reg("^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$");
             if (!std::regex_match(cs, reg))
                 return false;
             out = std::stod(cs);
@@ -113,6 +116,9 @@ namespace UYAML {
         }
 
         static bool try_convert(ValueType t, const Value<C> *v, bool &out) {
+            static std::regex trueReg("true|on|yes");
+            static std::regex falseReg("false|off|no");
+
             switch (t) {
                 case Bool:
                     out = v->b;
@@ -130,42 +136,15 @@ namespace UYAML {
                     str<C> r;
                     if (!wordToLower(s, r))
                         return false;
-                    switch (r.length()) {
-                        case 2:
-                            if (str_cmp(r, "on")) {
-                                out = true;
-                                break;
-                            }
-                            if (str_cmp(r, "no")) {
-                                out = false;
-                                break;
-                            }
-                            return false;
-                        case 3:
-                            if (str_cmp(r, "yes")) {
-                                out = true;
-                                break;
-                            }
-                            if (str_cmp(r, "off")) {
-                                out = false;
-                                break;
-                            }
-                            return false;
-                        case 4:
-                            if (str_cmp(r, "true")) {
-                                out = true;
-                                break;
-                            }
-                            return false;
-                        case 5:
-                            if (str_cmp(r, "false")) {
-                                out = false;
-                                break;
-                            }
-                            return false;
-                        default:
-                            return false;
-                    }
+                    str<char> ascii;
+                    if (!to_ascii_cstr(r, ascii))
+                        return false;
+                    if (std::regex_match(ascii, trueReg))
+                        out = true;
+                    else if (std::regex_match(ascii, falseReg))
+                        out = false;
+                    else
+                        return false;
                     break;
                 }
                 default:
