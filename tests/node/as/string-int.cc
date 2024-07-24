@@ -1,8 +1,5 @@
 #include "as.h"
 
-using namespace std;
-using namespace UYAML;
-
 
 #define ASSERT_INT(t, node, tv) ASSERT_EQ(node.as<t>(0), tv)
 #define ASSERT_INT_DEF(t, node) ASSERT_EQ(node.as<t>(0), 0); ASSERT_EQ(node.as<t>(1), 1)
@@ -22,5 +19,3 @@ TEST_C_AS_INT(int64_t, neg33, "-33", -33)
 TEST_C_AS_INT_DEF(int64_t, bad1, "a")
 
 TEST_C_AS_INT_DEF(int64_t, bad2, "1234567890987654321")
-
-TEST_ALL

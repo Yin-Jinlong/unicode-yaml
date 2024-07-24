@@ -2,6 +2,8 @@
 
 #include "test.h"
 
+TEST_HEAD
+
 #define TEST_STR_AS3(t, p, ct, msg, s, s1, s2, tgt, A, AD) T(Node,p##str_as_##t##_##msg){ \
      str<ct> v(s),v1(s1),v2(s2);\
      p##Node node(v),node1(v1),node2(v2);\

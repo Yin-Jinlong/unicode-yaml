@@ -1,8 +1,5 @@
 #include "as.h"
 
-using namespace std;
-using namespace UYAML;
-
 
 #define ASSERT_BOOL(node, tv) ASSERT_EQ(node.as<bool>(!tv), tv)
 #define ASSERT_BOOL_DEF(node) ASSERT_EQ(node.as<bool>(true), true); ASSERT_EQ(node.as<bool>(false), false)
@@ -139,6 +136,3 @@ TEST_U32_AS_BOOL_DEF(bad, U"?")
 TEST_U32_AS_BOOL_DEF(bad0, U"0")
 
 TEST_U32_AS_BOOL_DEF(bad1, U"1")
-
-
-TEST_ALL
