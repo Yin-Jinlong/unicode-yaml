@@ -95,7 +95,20 @@ namespace UYAML {
 
         static bool parse_float(const str<C> &s, double &out) {
             out = 0;
-            // TODO
+            str<char> cs;
+            for (auto c: s) {
+                if ((c >= '0' && c <= '9') ||
+                    c == '.' ||
+                    c == '-' || c == '+' ||
+                    c == 'e' || c == 'E') {
+                    cs += c;
+                } else
+                    return false;
+            }
+            std::regex reg("^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$");
+            if (!std::regex_match(cs, reg))
+                return false;
+            out = std::stod(cs);
             return true;
         }
 
