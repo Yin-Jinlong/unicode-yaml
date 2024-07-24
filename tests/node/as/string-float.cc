@@ -13,6 +13,8 @@ using namespace UYAML;
 #define TEST_C_AS_FLOAT(t, msg, s, tgt) TEST_AS_FLOAT(C,char,t,msg,s,tgt)
 #define TEST_C_AS_FLOAT_DEF(t, msg, s) TEST_AS_FLOAT_DEF(t,C, char, msg, s)
 
+TEST_C_AS_FLOAT(double, double0, ".1", 0.1)
+
 TEST_C_AS_FLOAT(double, double, "1.0", 1.0)
 
 TEST_C_AS_FLOAT(double, doublee, "1e5", 1e5)

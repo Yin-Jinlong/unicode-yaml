@@ -96,7 +96,7 @@ namespace UYAML {
         }
 
         static bool parse_float(const str<C> &s, double &out) {
-            static std::regex reg("^[+-]?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$");
+            static std::regex reg("^[+-]?([0-9]+)?(\\.[0-9]+)?([eE][+-]?[0-9]+)?$");
 
             out = 0;
             str<char> cs;
@@ -109,7 +109,7 @@ namespace UYAML {
                 } else
                     return false;
             }
-            if (!std::regex_match(cs, reg))
+            if (cs.empty() || !std::regex_match(cs, reg))
                 return false;
             out = std::stod(cs);
             return true;
