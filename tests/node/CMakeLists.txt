@@ -7,6 +7,7 @@ test_dir(new
 set(STR_AS_TYPES
         bool
         int
+        float
 )
 
 foreach (T ${STR_AS_TYPES})
