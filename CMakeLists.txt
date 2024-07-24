@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(unicode_yaml)
+project(unicode_yaml CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -23,7 +23,7 @@ add_library(unicode_yaml_static STATIC
         ${SRCS}
 )
 
-target_compile_definitions(unicode_yaml
+target_compile_definitions(unicode_yaml_static
         PUBLIC -DUYAML_USE_STATIC
 )
 
