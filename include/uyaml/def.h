@@ -12,7 +12,7 @@
 namespace UYAML {
 
     template<typename C>
-    using str = std::basic_string<C, std::char_traits<C>, std::allocator<C>>;
+    using str = std::basic_string<C>;
 
     template<typename C>
     class Node;
