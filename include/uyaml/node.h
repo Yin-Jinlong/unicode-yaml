@@ -23,44 +23,35 @@ namespace UYAML {
             value = new Value<C>();
         }
 
-        explicit Node(bool b) : Node(ValueType::Bool) {
-            value = new Value<C>(b);
-        }
+#define CONSTRUCTOR(t, T)  explicit Node(t v) : Node(ValueType::T) { value = new Value<C>(v); }
+#define CONSTRUCTOR_CAST(t, T)  explicit Node(t v) :  Node(static_cast<T>(v)){}
 
-#define CAST_CONSTRUCTOR(type) explicit Node(type i) : Node(static_cast<int64_t>(i)) {}
+        CONSTRUCTOR(bool, Bool)
 
-        CAST_CONSTRUCTOR(int8_t)
+        CONSTRUCTOR_CAST(int8_t, int64_t)
 
-        CAST_CONSTRUCTOR(uint8_t)
+        CONSTRUCTOR_CAST(uint8_t, int64_t)
 
-        CAST_CONSTRUCTOR(int16_t)
+        CONSTRUCTOR_CAST(int16_t, int64_t)
 
-        CAST_CONSTRUCTOR(uint16_t)
+        CONSTRUCTOR_CAST(uint16_t, int64_t)
 
-        CAST_CONSTRUCTOR(int32_t)
+        CONSTRUCTOR_CAST(int32_t, int64_t)
 
-        CAST_CONSTRUCTOR(uint32_t)
+        CONSTRUCTOR_CAST(uint32_t, int64_t)
 
-#undef CAST_CONSTRUCTOR
+        CONSTRUCTOR(int64_t, Int)
 
-        explicit Node(int64_t i) : Node(ValueType::Int) {
-            value = new Value<C>(i);
-        }
+        CONSTRUCTOR_CAST(float, double)
 
-        explicit Node(float f) : Node(static_cast<double >(f)) {
-        }
+        CONSTRUCTOR(double, Float)
 
-        explicit Node(double f) : Node(ValueType::Float) {
-            value = new Value<C>(f);
-        }
+        CONSTRUCTOR(const str<C> &, String)
 
-        explicit Node(const str<C> &s) : Node(ValueType::String) {
-            value = new Value<C>(s);
-        }
+        CONSTRUCTOR(const C*, String)
 
-        explicit Node(const C *s) : Node(ValueType::String) {
-            value = new Value<C>(s);
-        }
+#undef CONSTRUCTOR
+#undef CONSTRUCTOR_CAST
 
         explicit Node(const std::vector<Node<C> *> list) {
             type = ValueType::List;
@@ -111,19 +102,19 @@ namespace UYAML {
         Node<C> clone() {
             switch (type) {
                 case Null:
-                    return Node<C>();
+                    return Node();
                 case Bool:
-                    return Node<C>(value->b);
+                    return Node(value->b);
                 case Int:
-                    return Node<C>(value->i);
+                    return Node(value->i);
                 case Float:
-                    return Node<C>(value->f);
+                    return Node(value->f);
                 case String:
-                    return Node<C>(value->s);
+                    return Node(value->s);
                 case List:
-                    return Node<C>(value->list);
+                    return Node(value->list);
                 case Object:
-                    return Node<C>(value->obj);
+                    return Node(value->obj);
                 default:
                     throw std::runtime_error("unknown type");
             }
