@@ -18,9 +18,14 @@ namespace UYAML {
 
     };
 
+    template<typename C, typename K>
+    struct getter {
+
+    };
+
     template<typename C, typename T>
-    struct as_if {
-        explicit as_if(const Node<C> &node_) : node(node_) {}
+    struct as_if_convert {
+        explicit as_if_convert(const Node<C> &node_) : node(node_) {}
 
         const Node<C> &node;
 
@@ -183,6 +188,40 @@ namespace UYAML {
                     return false;
             }
             return true;
+        }
+    };
+
+
+    template<typename C, typename K>
+    struct as_if_get {
+        explicit as_if_get(Node<C> &node_) : node(node_) {}
+
+        Node<C> &node;
+
+        Node<C> &operator[](K key) const {
+            return getter<C, K>::get(node, key);
+        }
+    };
+
+    template<typename C>
+    struct getter<C, const C *> {
+        static Node<C> &get(Node<C> &node, const C *key) {
+            return node.get(key);
+        }
+    };
+
+
+    template<typename C>
+    struct getter<C, const str<C> &> {
+        static Node<C> &get(Node<C> &node, const str<C> &key) {
+            return node.get(key);
+        }
+    };
+
+    template<typename C>
+    struct getter<C, int> {
+        static Node<C> &get(Node<C> &node, int index) {
+            return node.get(index);
         }
     };
 

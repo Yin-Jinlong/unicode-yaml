@@ -8,7 +8,7 @@ include_directories(
         "../include"
 )
 
-function(test NAME )
+function(test NAME)
     set(SRCS)
     foreach (FILE ${ARGN})
         list(APPEND SRCS ${FILE})
@@ -35,4 +35,5 @@ function(test_dir NAME)
     test(${PROJECT_NAME}_${NAME} ${SRCS})
 endfunction()
 
+add_subdirectory(main)
 add_subdirectory(node)

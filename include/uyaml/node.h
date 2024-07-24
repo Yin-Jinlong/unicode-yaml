@@ -1,12 +1,16 @@
 #pragma once
 
 #include <stdexcept>
+#include <locale>
 #include "def.h"
 
 namespace UYAML {
 
     template<typename C, typename T>
-    struct as_if;
+    struct as_if_convert;
+
+    template<typename C, typename K>
+    struct as_if_get;
 
     template<typename C>
     class UYAML_API Node {
@@ -128,7 +132,7 @@ namespace UYAML {
             return value;
         }
 
-        bool IsNull() {
+        bool IsNull() noexcept {
             return type == ValueType::Null;
         }
 
@@ -141,13 +145,73 @@ namespace UYAML {
         }
 
         /**
+         * @brief 获取子节点，本节点必须是Object或Null类型，如果是Null类型则会转换成Object类型
+         * @param key 节点名
+         * @return 子节点或新的Null节点
+         * @throw std::runtime_error 如果不是Object类型
+         * @throw std::invalid_argument 如果key为空
+         */
+        Node<C> &get(const str<C> &key) {
+            if (type == ValueType::Null) {
+                type = ValueType::Object;
+                value = new Value<C>(std::map<str<C>, Node<C> *>());
+            } else if (type != ValueType::Object)
+                throw std::runtime_error("not a object");
+
+            auto map = value->obj;
+            str<C> k = key;
+            k.erase(k.begin(), std::find_if(k.begin(), k.end(), [](C ch) {
+                return !std::isspace((int) ch);
+            }));
+            k.erase(std::find_if(k.rbegin(), k.rend(), [](C ch) {
+                return !std::isspace((int) ch);
+            }).base(), k.end());
+
+            if (k.empty())
+                goto bad_arg;
+
+            if (map.find(key) == map.end()) {
+                map[key] = new Node();
+            }
+            return *map[key];
+            bad_arg:
+            throw std::invalid_argument("bad key");
+        }
+
+        /**
+         * @brief 获取子节点，本节点必须是List或Null类型，如果是Null类型则会转换成List类型
+         * @param index 索引，可以是负数，表示从后往前
+         * @return 子节点
+         * @throw std::runtime_error 如果不是List类型
+         * @throw std::out_of_range 如果下标越界
+         */
+        Node<C> &get(int index) {
+            if (type == ValueType::Null) {
+                type = ValueType::List;
+                value = new Value<C>(std::vector<Node<C> *>());
+                throw std::runtime_error("empty list");
+            } else if (type != ValueType::List)
+                throw std::runtime_error("not a list");
+            auto list = value->list;
+            auto size = list.size();
+            if (index <= -size || index >= size)
+                throw std::out_of_range("index out of range");
+            return index >= 0 ? *list[index] : *list[size + index];
+        }
+
+        /**
          * @brief 转换到值，不能转换则为默认值
          * @tparam T 目标类型
          * @return 结果
          */
         template<typename T>
         T as(T def) const noexcept {
-            return as_if<C, T>(*this)[def];
+            return as_if_convert<C, T>(*this)[def];
+        }
+
+        template<typename K>
+        Node<C> &operator[](K key) noexcept {
+            return as_if_get<C, K>(*this)[key];
         }
     };
 }
