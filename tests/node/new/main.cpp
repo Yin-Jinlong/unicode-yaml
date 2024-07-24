@@ -1,13 +1,11 @@
 #include "test.h"
 
-#define NAME Node
-
 using namespace std;
 using namespace UYAML;
 
 #define ASSERT_TYPE(n, t) EXPECT_EQ(n.Type(), ValueType::t)
 
-#define TEST_NEW(p, t, v) T(p##_new_##t){ASSERT_TYPE(p##Node(v), t);}
+#define TEST_NEW(p, t, v) T(Node,p##_new_##t){ASSERT_TYPE(p##Node(v), t);}
 
 // char
 

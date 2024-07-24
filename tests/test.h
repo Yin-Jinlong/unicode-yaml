@@ -9,4 +9,4 @@
     return RUN_ALL_TESTS();\
 }
 
-#define T(name) TEST(NAME##Test,name)
+#define T(tn,name) TEST(tn##Test,name)
