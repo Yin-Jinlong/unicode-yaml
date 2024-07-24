@@ -4,6 +4,12 @@ test_dir(new
         new/main.cpp
 )
 
-aux_source_directory(as AS_SRCS)
+set(STR_AS_TYPES
+        bool
+        int
+)
 
-test_dir(as ${AS_SRCS})
+foreach (T ${STR_AS_TYPES})
+    test_dir(str_as_${T} as/string-${T}.cc)
+endforeach ()
+

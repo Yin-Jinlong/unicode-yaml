@@ -9,3 +9,5 @@
 #define UYAML_API __declspec(dllimport)
 #endif
 #endif
+
+#define UYAML_USE_RET [[nodiscard]]

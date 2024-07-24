@@ -7,8 +7,8 @@ using namespace UYAML;
 #define ASSERT_BOOL(node, tv) ASSERT_EQ(node.as<bool>(!tv), tv)
 #define ASSERT_BOOL_DEF(node) ASSERT_EQ(node.as<bool>(true), true); ASSERT_EQ(node.as<bool>(false), false)
 
-#define TEST_AS_BOOL(p, ct, msg, s, s1, s2, tgt) TEST_AS(bool,p, ct, msg, s, s1, s2, tgt,ASSERT_BOOL,ASSERT_BOOL_DEF)
-#define TEST_AS_BOOL_DEF(p, ct, msg, s) TEST_AS_DEF(bool,p,ct,msg,s,ASSERT_BOOL_DEF)
+#define TEST_AS_BOOL(p, ct, msg, s, s1, s2, tgt) TEST_STR_AS3(bool,p, ct, msg, s, s1, s2, tgt,ASSERT_BOOL,ASSERT_BOOL_DEF)
+#define TEST_AS_BOOL_DEF(p, ct, msg, s) TEST_STR_AS_DEF(bool,p,ct,msg,s,ASSERT_BOOL_DEF)
 
 //
 // char
@@ -139,3 +139,6 @@ TEST_U32_AS_BOOL_DEF(bad, U"?")
 TEST_U32_AS_BOOL_DEF(bad0, U"0")
 
 TEST_U32_AS_BOOL_DEF(bad1, U"1")
+
+
+TEST_ALL

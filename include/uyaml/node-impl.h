@@ -14,7 +14,7 @@ namespace UYAML {
     struct converter_helper;
 
     template<typename C, typename T>
-    struct converter{
+    struct converter {
 
     };
 
@@ -72,16 +72,18 @@ namespace UYAML {
                 return false;
             if (s.length() > 21)
                 return false;
-            bool neg;
+            bool neg = false;
+            int i = 1;
             if (s[0] == '+') {
                 neg = false;
             } else if (s[0] == '-') {
                 neg = true;
             } else {
-                return false;
+                i = 0;
             }
             out = 0;
-            for (auto c: s) {
+            for (; i < s.length(); i++) {
+                auto c = s[i];
                 if (c <= '0' || c > '9')
                     return false;
                 out = out * 10 + c - '0';
@@ -97,7 +99,7 @@ namespace UYAML {
             return true;
         }
 
-        static bool try_convert(ValueType t, Value<C> *v, bool &out) {
+        static bool try_convert(ValueType t, const Value<C> *v, bool &out) {
             switch (t) {
                 case Bool:
                     out = v->b;
@@ -159,7 +161,7 @@ namespace UYAML {
             return true;
         }
 
-        static bool try_convert(ValueType t, Value<C> *v, int64_t &out) {
+        static bool try_convert(ValueType t, const Value<C> *v, int64_t &out) {
             switch (t) {
                 case Int:
                     out = v->i;
@@ -175,7 +177,7 @@ namespace UYAML {
             return true;
         }
 
-        static bool try_convert(ValueType t, Value<C> *v, double &out) {
+        static bool try_convert(ValueType t, const Value<C> *v, double &out) {
             switch (t) {
                 case Int:
                     out = static_cast<double >(v->i);

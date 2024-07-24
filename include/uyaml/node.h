@@ -112,7 +112,6 @@ namespace UYAML {
             switch (type) {
                 case Null:
                     return Node<C>();
-                    break;
                 case Bool:
                     return Node<C>(value->b);
                 case Int:
@@ -130,11 +129,11 @@ namespace UYAML {
             }
         }
 
-        [[nodiscard]] ValueType Type() const {
+        UYAML_USE_RET ValueType Type() const {
             return type;
         }
 
-        [[nodiscard]] Value<C> *ValueRaw() const {
+        const Value<C> *ValueRaw() const {
             return value;
         }
 
