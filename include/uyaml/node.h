@@ -193,7 +193,7 @@ namespace UYAML {
             } else if (type != ValueType::List)
                 throw std::runtime_error("not a list");
             auto list = value->list;
-            auto size = list.size();
+            int size = list.size();
             if (index <= -size || index >= size)
                 throw std::out_of_range("index out of range");
             return index >= 0 ? *list[index] : *list[size + index];
