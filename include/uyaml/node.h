@@ -25,17 +25,6 @@ namespace UYAML {
         Value<C> *value;
 
         void cleanValue() {
-            if (type == ValueType::List) {
-                for (auto &i: *value->list) {
-                    delete i;
-                }
-                delete value->list;
-            } else if (type == ValueType::Object) {
-                for (auto &i: *value->obj) {
-                    delete i.second;
-                }
-                delete value->obj;
-            }
             delete value;
             value = nullptr;
         }
@@ -53,14 +42,14 @@ namespace UYAML {
             if (type != ValueType::Null)
                 return;
             type = ValueType::Object;
-            value = new Value<C>(new std::map<str<C>, Node<C> *>());
+            value = new Value<C>(new std::map<str<C>, std::shared_ptr<Node<C>>>());
         }
 
         void convert2list() {
             if (type != ValueType::Null)
                 return;
             type = ValueType::List;
-            value = new Value<C>(new std::vector<Node<C> *>());
+            value = new Value<C>(new std::vector<std::shared_ptr<Node<C>>>());
         }
 
         Node<C> *parse_value(std::list<str<C>> lines, int row) {
@@ -143,8 +132,10 @@ namespace UYAML {
                         keyline += ':';
                         keyline += ' ';
                         if (v->type != ValueType::Object) {
-                            keyline += valueLines.front();
-                            lines.push_back(keyline);
+                            if (!valueLines.empty()) {
+                                keyline += valueLines.front();
+                                lines.push_back(keyline);
+                            }
                         } else {
                             lines.push_back(keyline);
                             for (auto sline: valueLines) {
@@ -282,11 +273,11 @@ namespace UYAML {
             return as<str<C>>(def);
         }
 
-        std::vector<Node<C> *> asList() const noexcept {
+        std::vector<std::shared_ptr<Node<C>>> asList() const noexcept {
             return type == ValueType::List ? value->list : std::vector<Node<C> *>();
         }
 
-        std::map<str<C>, Node<C> *> asMap() const noexcept {
+        std::map<str<C>, std::shared_ptr<Node<C>>> asMap() const noexcept {
             return type == ValueType::Object ? value->obj : std::map<str<C>, Node<C> *>();
         }
 
@@ -297,7 +288,7 @@ namespace UYAML {
          * @throw std::runtime_error 如果不是Object类型
          * @throw std::invalid_argument 如果key为空
          */
-        Node<C> *get(const str<C> &key) {
+        std::shared_ptr<Node<C>> get(const str<C> &key) {
             if (type == ValueType::Null) {
                 convert2obj();
             } else if (type != ValueType::Object)
@@ -317,7 +308,7 @@ namespace UYAML {
                 goto bad_arg;
 
             if (map->find(key) == map->end()) {
-                map->insert(std::make_pair(key, new Node()));
+                map->insert(std::make_pair(key, std::make_shared<Node<C>>()));
             }
             return map->at(key);
         bad_arg:
@@ -331,7 +322,7 @@ namespace UYAML {
          * @throw std::runtime_error 如果不是List类型
          * @throw std::out_of_range 如果下标越界
          */
-        Node<C> *get(int index) {
+        std::shared_ptr<Node<C>> get(int index) {
             if (type == ValueType::Null) {
                 convert2list();
                 throw std::runtime_error("empty list");
@@ -355,7 +346,7 @@ namespace UYAML {
         }
 
         template<typename K>
-        Node<C> *operator[](K key) noexcept {
+        std::shared_ptr<Node<C>> operator[](K key) noexcept {
             return as_if_get<C, K>(*this)[key];
         }
 

@@ -11,8 +11,8 @@ namespace UYAML {
         int64_t i;
         double f;
         str<C> s;
-        std::vector<Node<C> *> *list;
-        std::map<str<C>, Node<C> *> *obj;
+        std::vector<std::shared_ptr<Node<C>>> list;
+        std::map<str<C>, std::shared_ptr<Node<C>>> *obj;
 
     public:
         Value() : nul(0) {}
@@ -29,8 +29,8 @@ namespace UYAML {
 
         explicit Value(const str<C> &s) : s(s) {}
 
-        explicit Value(std::vector<Node<C> *> *list) : list(list) {}
+        explicit Value(std::vector<std::shared_ptr<Node<C>>> *list) : list(list) {}
 
-        explicit Value(std::map<str<C>, Node<C> *> *obj) : obj(obj) {}
+        explicit Value(std::map<str<C>, std::shared_ptr<Node<C>>> *obj) : obj(obj) {}
     };
 }// namespace UYAML

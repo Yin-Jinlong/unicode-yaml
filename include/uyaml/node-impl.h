@@ -209,14 +209,14 @@ namespace UYAML {
 
         Node<C> &node;
 
-        Node<C> *operator[](K key) const {
+        std::shared_ptr<Node<C>> operator[](K key) const {
             return getter<C, K>::get(node, key);
         }
     };
 
     template<typename C>
     struct getter<C, const C *> {
-        static Node<C> *get(Node<C> &node, const C *key) {
+        static std::shared_ptr<Node<C>> get(Node<C> &node, const C *key) {
             return node.get(key);
         }
     };
@@ -224,14 +224,14 @@ namespace UYAML {
 
     template<typename C>
     struct getter<C, const str<C> &> {
-        static Node<C> *get(Node<C> &node, const str<C> &key) {
+        static std::shared_ptr<Node<C>> get(Node<C> &node, const str<C> &key) {
             return node.get(key);
         }
     };
 
     template<typename C>
     struct getter<C, int> {
-        static Node<C> *get(Node<C> &node, int index) {
+        static std::shared_ptr<Node<C>> get(Node<C> &node, int index) {
             return node.get(index);
         }
     };
