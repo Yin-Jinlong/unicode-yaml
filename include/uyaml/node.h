@@ -76,10 +76,12 @@ namespace UYAML {
                     while (lines.size()) {
                         row++;
                         auto sline = lines.front();
-                        lines.pop_front();
                         pi = parser_trim_start(sline, 2);
                         if (parser_is_comment_or_blank(sline))
                             continue;
+                        if (!pi)
+                            break;
+                        lines.pop_front();
                         if (pi != 2)
                             throw error_line("bad indent", row);
                         sublines.push_back(sline);
