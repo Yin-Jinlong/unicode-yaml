@@ -22,6 +22,24 @@ namespace UYAML {
         return count;
     }
 
+    /**
+        * @brief 移除头部最多n个空格
+        * @param str 移除后的字符串
+        * @param count 最多个数
+        * @return 移除的空格个数
+        */
+    template<typename C>
+    size_t parser_trim_start(str<C> &str, int count) {
+        size_t sc = 0;
+        while (str.size() && str[0] == ' ') {
+            str.erase(0, 1);
+            sc++;
+            if (sc >= count)
+                break;
+        }
+        return sc;
+    }
+
 
     /**
      * @brief 移除尾部空格
@@ -83,5 +101,10 @@ namespace UYAML {
         line = text;
         text.clear();
         return index;
+    }
+
+    template<typename C>
+    bool parser_is_comment_or_blank(const str<C> &line) {
+        return line.empty() || line[0] == '#';
     }
 }

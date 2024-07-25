@@ -42,6 +42,12 @@ namespace UYAML {
             value = new Value<C>(new std::vector<Node<C> *>());
         }
 
+        Node<C> *parse_value(std::list<str<C>> lines, int row) {
+            auto node = new Node<C>();
+            node->parse(lines, row);
+            return node;
+        }
+
         void parse(std::list<str<C>> lines, int row) {
             if (type != ValueType::Null && type != ValueType::Object)
                 throw std::runtime_error("not Object node could not have named child node");
@@ -53,17 +59,32 @@ namespace UYAML {
                 auto line = lines.front();
                 lines.pop_front();
                 int pi = parser_trim_start(line) / 2;
-                if (line.empty() || line[0] == '#') // 空行
+                if (parser_is_comment_or_blank(line)) // 空行
                     continue;
                 if (pi)
                     throw error_line("bad indent", row);
                 str<C> k, v;
                 if (!parser_split_kv(line, k, v))
                     throw error_line("bad key-value", row);
-                if (v.empty())
-                    throw std::runtime_error("new line value not supported yet");
 
-                value->obj->insert(std::pair(k, new Node<C>(v)));
+                if (v.empty()) {
+                    std::list<str<C>> sublines;
+                    while (lines.size()) {
+                        row++;
+                        auto sline = lines.front();
+                        lines.pop_front();
+                        pi = parser_trim_start(sline, 2);
+                        if (parser_is_comment_or_blank(sline))
+                            continue;
+                        if (pi != 2)
+                            throw error_line("bad indent", row);
+                        sublines.push_back(sline);
+                    }
+                    auto node = parse_value(sublines, row - 1);
+                    value->obj->insert(std::pair(k, node));
+                } else {
+                    value->obj->insert(std::pair(k, new Node<C>(v)));
+                }
             }
         }
 
