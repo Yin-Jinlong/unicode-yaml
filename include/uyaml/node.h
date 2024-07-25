@@ -106,6 +106,8 @@ namespace UYAML {
             std::list<str<C>> lines;
             std::string line;
             switch (type) {
+                case Null:
+                    break;
                 case Bool:
                     line = value->b ? "true" : "false";
                     break;
@@ -208,7 +210,9 @@ namespace UYAML {
         template<typename T>
         explicit Node(T val) : Node(as_if<C, T>(val)){};
 
-        Node(const Node<C> &node) = default;
+        Node(const Node<C> &node) = delete;
+
+        Node(Node<C> &node) = delete;
 
         Node(const Node<C> &&node) noexcept {
             type = node.type;
@@ -310,7 +314,7 @@ namespace UYAML {
             if (map->find(key) == map->end()) {
                 map->insert(std::make_pair(key, std::make_shared<Node<C>>()));
             }
-            return map->at(key);
+            return std::shared_ptr(map->at(key));
         bad_arg:
             throw std::invalid_argument("bad key");
         }
@@ -332,7 +336,7 @@ namespace UYAML {
             int size = list->size();
             if (index <= -size || index >= size)
                 throw std::out_of_range("index out of range");
-            return index >= 0 ? list->at(index) : list->at(size + index);
+            return std::shared_ptr(index >= 0 ? list->at(index) : list->at(size + index));
         }
 
         /**
@@ -358,32 +362,42 @@ namespace UYAML {
         template<typename V>
         void set(V val);
 
-#define SETTER(t)                \
+#define SETTER(t, T)             \
     template<>                   \
     void set(t v) {              \
         cleanValue();            \
+        type = T;                \
         value = new Value<C>(v); \
     }
 
-#define SETTER_CAST(t, T)                        \
-    template<>                                   \
-    void set(t v) {                              \
-        cleanValue();                            \
-        value = new Value<C>(static_cast<T>(v)); \
+#define SETTER_CAST(t, ct, T)                      \
+    template<>                                     \
+    void set(t v) {                                \
+        cleanValue();                              \
+        type = T;                                  \
+        value = new Value<ct>(static_cast<ct>(v)); \
     }
 
-        SETTER(bool)
-        SETTER_CAST(int8_t, int64_t)
-        SETTER_CAST(uint8_t, int64_t)
-        SETTER_CAST(int16_t, int64_t)
-        SETTER_CAST(uint16_t, int64_t)
-        SETTER_CAST(int32_t, int64_t)
-        SETTER_CAST(uint32_t, int64_t)
-        SETTER(int64_t)
-        SETTER(double)
-        SETTER_CAST(float, double)
-        SETTER(str<C>)
-        SETTER(const C *);
+        SETTER(bool, Bool)
+        SETTER_CAST(int8_t, int64_t, Int)
+        SETTER_CAST(uint8_t, int64_t, Int)
+        SETTER_CAST(int16_t, int64_t, Int)
+        SETTER_CAST(uint16_t, int64_t, Int)
+        SETTER_CAST(int32_t, int64_t, Int)
+        SETTER_CAST(uint32_t, int64_t, Int)
+        SETTER(int64_t, Int)
+        SETTER(double, Float)
+        SETTER_CAST(float, double, Float)
+        SETTER(str<C>, String)
+        SETTER(const C *, String)
+        SETTER(std::vector<std::shared_ptr<Node<C>>> *, List)
+
+        template<>
+        void set(std::map<str<C>, std::shared_ptr<Node<C>>> *v) {
+            cleanValue();
+            type = Object;
+            value = new Value<C>(v);
+        }
 
 #undef SETTER_CAST
 #undef SETTER
