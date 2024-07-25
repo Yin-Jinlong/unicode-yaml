@@ -1,13 +1,13 @@
 #pragma once
 
 #ifdef UYAML_USE_STATIC
-#define UYAML_API
+    #define UYAML_API
 #else
-#ifdef UYAML_EXPORT
-#define UYAML_API __declspec(dllexport)
-#else
-#define UYAML_API __declspec(dllimport)
-#endif
+    #ifdef UYAML_EXPORT
+        #define UYAML_API __declspec(dllexport)
+    #else
+        #define UYAML_API __declspec(dllimport)
+    #endif
 #endif
 
 #define UYAML_USE_RET [[nodiscard]]

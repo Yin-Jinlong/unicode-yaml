@@ -2,17 +2,19 @@
 
 
 #define ASSERT_BOOL(node, tv) ASSERT_EQ(node.as<bool>(!tv), tv)
-#define ASSERT_BOOL_DEF(node) ASSERT_EQ(node.as<bool>(true), true); ASSERT_EQ(node.as<bool>(false), false)
+#define ASSERT_BOOL_DEF(node)             \
+    ASSERT_EQ(node.as<bool>(true), true); \
+    ASSERT_EQ(node.as<bool>(false), false)
 
-#define TEST_AS_BOOL(p, ct, msg, s, s1, s2, tgt) TEST_STR_AS3(bool,p, ct, msg, s, s1, s2, tgt,ASSERT_BOOL,ASSERT_BOOL_DEF)
-#define TEST_AS_BOOL_DEF(p, ct, msg, s) TEST_STR_AS_DEF(bool,p,ct,msg,s,ASSERT_BOOL_DEF)
+#define TEST_AS_BOOL(p, ct, msg, s, s1, s2, tgt) TEST_STR_AS3(bool, p, ct, msg, s, s1, s2, tgt, ASSERT_BOOL, ASSERT_BOOL_DEF)
+#define TEST_AS_BOOL_DEF(p, ct, msg, s) TEST_STR_AS_DEF(bool, p, ct, msg, s, ASSERT_BOOL_DEF)
 
 //
 // char
 //
 
-#define TEST_C_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(C,char,msg, s, s1, s2, tgt)
-#define TEST_C_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(C,char,msg, s)
+#define TEST_C_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(C, char, msg, s, s1, s2, tgt)
+#define TEST_C_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(C, char, msg, s)
 
 TEST_C_AS_BOOL(true, "true", "1true", "true1", true)
 
@@ -37,8 +39,8 @@ TEST_C_AS_BOOL_DEF(bad1, "1")
 // wchar_t
 //
 
-#define TEST_W_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(W,wchar_t ,msg, s, s1, s2, tgt)
-#define TEST_W_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(W,wchar_t ,msg, s)
+#define TEST_W_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(W, wchar_t, msg, s, s1, s2, tgt)
+#define TEST_W_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(W, wchar_t, msg, s)
 
 TEST_W_AS_BOOL(true, L"true", L"1true", L"true1", true)
 
@@ -63,8 +65,8 @@ TEST_W_AS_BOOL_DEF(bad1, L"1")
 // char8_t
 //
 
-#define TEST_U8_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(U8,char8_t ,msg, s, s1, s2, tgt)
-#define TEST_U8_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(U8,char8_t ,msg, s)
+#define TEST_U8_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(U8, char8_t, msg, s, s1, s2, tgt)
+#define TEST_U8_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(U8, char8_t, msg, s)
 
 TEST_U8_AS_BOOL(true, u8"true", u8"1true", u8"true1", true)
 
@@ -89,8 +91,8 @@ TEST_U8_AS_BOOL_DEF(bad1, u8"1")
 // char16_t
 //
 
-#define TEST_U16_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(U16,char16_t ,msg, s, s1, s2, tgt)
-#define TEST_U16_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(U16,char16_t ,msg, s)
+#define TEST_U16_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(U16, char16_t, msg, s, s1, s2, tgt)
+#define TEST_U16_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(U16, char16_t, msg, s)
 
 TEST_U16_AS_BOOL(true, u"true", u"1true", u"true1", true)
 
@@ -111,13 +113,12 @@ TEST_U16_AS_BOOL_DEF(bad0, u"0")
 TEST_U16_AS_BOOL_DEF(bad1, u"1")
 
 
-
 //
 // char32_t
 //
 
-#define TEST_U32_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(U32,char32_t ,msg, s, s1, s2, tgt)
-#define TEST_U32_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(U32,char32_t ,msg, s)
+#define TEST_U32_AS_BOOL(msg, s, s1, s2, tgt) TEST_AS_BOOL(U32, char32_t, msg, s, s1, s2, tgt)
+#define TEST_U32_AS_BOOL_DEF(msg, s) TEST_AS_BOOL_DEF(U32, char32_t, msg, s)
 
 TEST_U32_AS_BOOL(true, U"true", U"1true", U"true1", true)
 

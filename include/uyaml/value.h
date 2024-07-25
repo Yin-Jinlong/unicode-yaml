@@ -13,39 +13,24 @@ namespace UYAML {
         str<C> s;
         std::vector<Node<C> *> *list;
         std::map<str<C>, Node<C> *> *obj;
+
     public:
         Value() : nul(0) {}
 
-        ~Value() {
+        ~Value(){};
 
-        };
+        explicit Value(bool b) : b(b) {}
 
-        explicit Value(bool b) : b(b) {
+        explicit Value(int64_t i) : i(i) {}
 
-        }
+        explicit Value(double f) : f(f) {}
 
-        explicit Value(int64_t i) : i(i) {
+        explicit Value(const C *s) : s(s) {}
 
-        }
+        explicit Value(const str<C> &s) : s(s) {}
 
-        explicit Value(double f) : f(f) {
+        explicit Value(std::vector<Node<C> *> *list) : list(list) {}
 
-        }
-
-        explicit Value(const C *s) : s(s) {
-
-        }
-
-        explicit Value(const str<C> &s) : s(s) {
-
-        }
-
-        explicit Value(std::vector<Node<C> *> *list) : list(list) {
-
-        }
-
-        explicit Value(std::map<str<C>, Node<C> *> *obj) : obj(obj) {
-
-        }
+        explicit Value(std::map<str<C>, Node<C> *> *obj) : obj(obj) {}
     };
-}
+}// namespace UYAML

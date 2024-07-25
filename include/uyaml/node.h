@@ -1,9 +1,10 @@
 #pragma once
 
-#include <stdexcept>
-#include <locale>
 #include "def.h"
-#include "list"
+
+#include <list>
+#include <locale>
+
 #include "parser.h"
 
 namespace UYAML {
@@ -19,6 +20,7 @@ namespace UYAML {
     private:
         ValueType type;
         Value<C> *value;
+
     protected:
         explicit Node(ValueType t) {
             type = t;
@@ -59,7 +61,7 @@ namespace UYAML {
                 auto line = lines.front();
                 lines.pop_front();
                 int pi = parser_trim_start(line) / 2;
-                if (parser_is_comment_or_blank(line)) // 空行
+                if (parser_is_comment_or_blank(line))// 空行
                     continue;
                 if (pi)
                     throw error_line("bad indent", row);
@@ -67,6 +69,8 @@ namespace UYAML {
                 if (!parser_split_kv(line, k, v))
                     throw error_line("bad key-value", row);
 
+                parser_trim(k);
+                parser_trim(v);
                 if (v.empty()) {
                     std::list<str<C>> sublines;
                     while (lines.size()) {
@@ -93,8 +97,10 @@ namespace UYAML {
             value = new Value<C>();
         }
 
-#define CONSTRUCTOR(t, T)  explicit Node(t v) : Node(ValueType::T) { value = new Value<C>(v); }
-#define CONSTRUCTOR_CAST(t, T)  explicit Node(t v) :  Node(static_cast<T>(v)){}
+#define CONSTRUCTOR(t, T) \
+    explicit Node(t v) : Node(ValueType::T) { value = new Value<C>(v); }
+#define CONSTRUCTOR_CAST(t, T) \
+    explicit Node(t v) : Node(static_cast<T>(v)) {}
 
         CONSTRUCTOR(bool, Bool)
 
@@ -118,7 +124,7 @@ namespace UYAML {
 
         CONSTRUCTOR(const str<C> &, String)
 
-        CONSTRUCTOR(const C*, String)
+        CONSTRUCTOR(const C *, String)
 
 #undef CONSTRUCTOR
 #undef CONSTRUCTOR_CAST
@@ -143,9 +149,7 @@ namespace UYAML {
         }
 
         template<typename T>
-        explicit Node(T val):Node(as_if<C, T>(val)) {
-
-        };
+        explicit Node(T val) : Node(as_if<C, T>(val)){};
 
         Node(const Node<C> &node) = default;
 
@@ -232,7 +236,8 @@ namespace UYAML {
             }));
             k.erase(std::find_if(k.rbegin(), k.rend(), [](C ch) {
                 return !std::isspace((int) ch);
-            }).base(), k.end());
+            }).base(),
+                    k.end());
 
             if (k.empty())
                 goto bad_arg;
@@ -241,7 +246,7 @@ namespace UYAML {
                 map->insert(std::make_pair(key, new Node()));
             }
             return map->at(key);
-            bad_arg:
+        bad_arg:
             throw std::invalid_argument("bad key");
         }
 
@@ -289,6 +294,5 @@ namespace UYAML {
                 lines.push_back(str<C>(line.begin(), line.end()));
             parse(lines, 0);
         }
-
     };
-}
+}// namespace UYAML

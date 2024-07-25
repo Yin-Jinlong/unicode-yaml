@@ -12,4 +12,4 @@ namespace UYAML {
 
     IMPL_CONVERTER_STR(char16_t);
 
-}
+}// namespace UYAML

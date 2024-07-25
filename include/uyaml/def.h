@@ -3,9 +3,9 @@
 #include "dll.h"
 
 #include <cstdint>
-#include <xstring>
-#include <vector>
 #include <map>
+#include <vector>
+#include <xstring>
 
 #include "value-type.h"
 
@@ -38,4 +38,4 @@ namespace UYAML {
     typedef std::map<str<char16_t>, U16Node *> U16NodeMap;
     typedef std::map<str<char32_t>, U32Node *> U32NodeMap;
 
-}
+}// namespace UYAML

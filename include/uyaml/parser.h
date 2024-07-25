@@ -1,26 +1,19 @@
 #pragma once
 
-#include <sstream>
+#include "def.h"
+
 #include <fstream>
 #include <queue>
-#include "node.h"
+#include <sstream>
+#include <stdexcept>
 
 namespace UYAML {
 
-    /**
-        * @brief 移除头部空格
-        * @param str 移除后的字符串
-        * @return 空格个数
-        */
-    template<typename C>
-    size_t parser_trim_start(str<C> &str) {
-        size_t count = 0;
-        while (str.size() && str[0] == ' ') {
-            str.erase(0, 1);
-            count++;
-        }
-        return count;
-    }
+#ifndef UYAML_BLANKS
+    #define UYAML_BLANKS U" \t\n"
+#endif
+
+    typedef const char32_t blank;
 
     /**
         * @brief 移除头部最多n个空格
@@ -28,14 +21,22 @@ namespace UYAML {
         * @param count 最多个数
         * @return 移除的空格个数
         */
-    template<typename C>
-    size_t parser_trim_start(str<C> &str, int count) {
+    template<typename C, std::size_t N = 3>
+    size_t parser_trim_start(str<C> &str, int count = INT32_MAX, blank blanks[N] = UYAML_BLANKS) {
         size_t sc = 0;
-        while (str.size() && str[0] == ' ') {
-            str.erase(0, 1);
-            sc++;
-            if (sc >= count)
-                break;
+    next:
+        while (str.size()) {
+            C c = str[0];
+            for (int i = 0; i < N; ++i) {
+                if (c != blanks[i])
+                    continue;
+                str.erase(0, 1);
+                sc++;
+                if (sc >= count)
+                    return sc;
+                goto next;
+            }
+            break;
         }
         return sc;
     }
@@ -46,8 +47,8 @@ namespace UYAML {
      * @param str 移除后的字符串
      * @return 空格个数
      */
-    template<typename C>
-    size_t parser_trim_end(str<C> &str) {
+    template<typename C, std::size_t N = 3>
+    size_t parser_trim_end(str<C> &str, blank blanks[N] = UYAML_BLANKS) {
         size_t count = 0;
         while (str.size()) {
             auto c = str[str.size() - 1];
@@ -60,9 +61,9 @@ namespace UYAML {
         return count;
     }
 
-    template<typename C>
-    size_t parser_trim(str<C> &str) {
-        return parser_trim_start(str) + parser_trim_end(str);
+    template<typename C, std::size_t N = 3>
+    size_t parser_trim(str<C> &str, blank blanks[N] = UYAML_BLANKS) {
+        return parser_trim_start<C, N>(str, INT32_MAX, blanks) + parser_trim_end<C, N>(str, blanks);
     }
 
     /**
@@ -107,4 +108,4 @@ namespace UYAML {
     bool parser_is_comment_or_blank(const str<C> &line) {
         return line.empty() || line[0] == '#';
     }
-}
+}// namespace UYAML
