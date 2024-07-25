@@ -10,7 +10,7 @@
 namespace UYAML {
 
 #ifndef UYAML_BLANKS
-    #define UYAML_BLANKS U" \t\n"
+    #define UYAML_BLANKS U" \t\r\n"
 #endif
 
     typedef const char32_t blank;
