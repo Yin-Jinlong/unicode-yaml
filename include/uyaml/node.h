@@ -208,6 +208,26 @@ namespace UYAML {
             return type == ValueType::Null;
         }
 
+        str<C> Str() {
+            return type == ValueType::String ? value->s : str<C>();
+        }
+
+        bool asBool(bool def) {
+            return as<bool>(def);
+        }
+
+        int64_t asInt(int64_t def) {
+            return as<int64_t>(def);
+        }
+
+        double asFloat(double def) {
+            return as<double>(def);
+        }
+
+        str<C> asStr(const str<C> &def) {
+            return as<str<C>>(def);
+        }
+
         std::vector<Node<C> *> asList() const noexcept {
             return type == ValueType::List ? value->list : std::vector<Node<C> *>();
         }
