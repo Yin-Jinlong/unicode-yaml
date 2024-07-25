@@ -228,7 +228,6 @@ namespace UYAML {
             return node.get(index);
         }
     };
-
 }// namespace UYAML
 
 #define IMPL_CONVERTER_STR(c) IMPL_CONVERTER(c, str<c>, { \

@@ -94,6 +94,62 @@ namespace UYAML {
             }
         }
 
+        std::list<str<C>> dump() {
+            std::list<str<C>> lines;
+            std::string line;
+            switch (type) {
+                case Bool:
+                    line = value->b ? "true" : "false";
+                    break;
+                case Int:
+                    line = std::to_string(value->i);
+                    break;
+                case Float:
+                    line = std::to_string(value->f);
+                    break;
+                case String: {
+                    auto s = value->s;
+                    lines.push_back(str<C>(s.begin(), s.end()));
+                    return lines;
+                }
+                case List:
+                    throw std::runtime_error("not support list yes");
+                case Object: {
+                    auto obj = *value->obj;
+                    for (auto pair: obj) {
+                        str<C> keyline;
+                        auto v = pair.second;
+                        auto valueLines = v->dump();
+                        keyline += pair.first;
+                        keyline += ':';
+                        keyline += ' ';
+                        if (v->type != ValueType::Object) {
+                            keyline += valueLines.front();
+                            lines.push_back(keyline);
+                        } else {
+                            lines.push_back(keyline);
+                            for (auto sline: valueLines) {
+                                str<C> s;
+                                s += ' ';
+                                s += ' ';
+                                s += sline;
+                                lines.push_back(s);
+                            }
+                        }
+                    }
+                    return lines;
+                }
+                default:
+                    return lines;
+            }
+            str<C> s;
+            for (auto c: line) {
+                s += c;
+            }
+            lines.push_back(s);
+            return lines;
+        }
+
     public:
         explicit Node() : Node(ValueType::Null) {
             value = new Value<C>();
@@ -315,6 +371,16 @@ namespace UYAML {
             while (parser_get_line(s, line))
                 lines.push_back(str<C>(line.begin(), line.end()));
             parse(lines, 0);
+        }
+
+        template<std::size_t N>
+        str<C> Dump(const C eol[N]) {
+            std::basic_ostringstream<C> out;
+            auto lines = dump();
+            for (auto &i: lines) {
+                out << i << eol;
+            }
+            return out.str();
         }
     };
 }// namespace UYAML
