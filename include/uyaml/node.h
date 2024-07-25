@@ -15,11 +15,30 @@ namespace UYAML {
     template<typename C, typename K>
     struct as_if_get;
 
+    template<typename C, typename V>
+    struct as_if_set;
+
     template<typename C>
     class UYAML_API Node {
     private:
         ValueType type;
         Value<C> *value;
+
+        void cleanValue() {
+            if (type == ValueType::List) {
+                for (auto &i: *value->list) {
+                    delete i;
+                }
+                delete value->list;
+            } else if (type == ValueType::Object) {
+                for (auto &i: *value->obj) {
+                    delete i.second;
+                }
+                delete value->obj;
+            }
+            delete value;
+            value = nullptr;
+        }
 
     protected:
         explicit Node(ValueType t) {
@@ -161,27 +180,16 @@ namespace UYAML {
     explicit Node(t v) : Node(static_cast<T>(v)) {}
 
         CONSTRUCTOR(bool, Bool)
-
         CONSTRUCTOR_CAST(int8_t, int64_t)
-
         CONSTRUCTOR_CAST(uint8_t, int64_t)
-
         CONSTRUCTOR_CAST(int16_t, int64_t)
-
         CONSTRUCTOR_CAST(uint16_t, int64_t)
-
         CONSTRUCTOR_CAST(int32_t, int64_t)
-
         CONSTRUCTOR_CAST(uint32_t, int64_t)
-
         CONSTRUCTOR(int64_t, Int)
-
         CONSTRUCTOR_CAST(float, double)
-
         CONSTRUCTOR(double, Float)
-
         CONSTRUCTOR(const str<C> &, String)
-
         CONSTRUCTOR(const C *, String)
 
 #undef CONSTRUCTOR
@@ -219,18 +227,7 @@ namespace UYAML {
         Node(Node<C> &&node) = default;
 
         ~Node() {
-            if (type == ValueType::List) {
-                for (auto &i: *value->list) {
-                    delete i;
-                }
-                delete value->list;
-            } else if (type == ValueType::Object) {
-                for (auto &i: *value->obj) {
-                    delete i.second;
-                }
-                delete value->obj;
-            }
-            delete value;
+            cleanValue();
         }
 
         Node<C> clone() {
@@ -270,18 +267,17 @@ namespace UYAML {
             return type == ValueType::String ? value->s : str<C>();
         }
 
-        bool asBool(bool def) {
-            return as<bool>(def);
-        }
+#define AS_DEF(t, N)       \
+    t as##N(t def) {       \
+        return as<t>(def); \
+    }
 
-        int64_t asInt(int64_t def) {
-            return as<int64_t>(def);
-        }
+        AS_DEF(bool, Bool)
+        AS_DEF(int64_t, Int)
+        AS_DEF(double, Float)
+        AS_DEF(str<C>, String)
 
-        double asFloat(double def) {
-            return as<double>(def);
-        }
-
+#undef AS_DEF
         str<C> asStr(const str<C> &def) {
             return as<str<C>>(def);
         }
@@ -361,6 +357,51 @@ namespace UYAML {
         template<typename K>
         Node<C> *operator[](K key) noexcept {
             return as_if_get<C, K>(*this)[key];
+        }
+
+        void set() {
+            cleanValue();
+            value = new Value<C>();
+        }
+
+        template<typename V>
+        void set(V val);
+
+#define SETTER(t)                \
+    template<>                   \
+    void set(t v) {              \
+        cleanValue();            \
+        value = new Value<C>(v); \
+    }
+
+#define SETTER_CAST(t, T)                        \
+    template<>                                   \
+    void set(t v) {                              \
+        cleanValue();                            \
+        value = new Value<C>(static_cast<T>(v)); \
+    }
+
+        SETTER(bool)
+        SETTER_CAST(int8_t, int64_t)
+        SETTER_CAST(uint8_t, int64_t)
+        SETTER_CAST(int16_t, int64_t)
+        SETTER_CAST(uint16_t, int64_t)
+        SETTER_CAST(int32_t, int64_t)
+        SETTER_CAST(uint32_t, int64_t)
+        SETTER(int64_t)
+        SETTER(double)
+        SETTER_CAST(float, double)
+        SETTER(str<C>)
+        SETTER(const C *);
+
+#undef SETTER_CAST
+#undef SETTER
+
+
+        template<typename V>
+        Node<C> &operator=(V val) {
+            as_if_set<C, V>(this)(val);
+            return *this;
         }
 
         void Parse(const str<C> &text) {

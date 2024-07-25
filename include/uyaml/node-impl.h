@@ -28,6 +28,13 @@ namespace UYAML {
     struct getter {
     };
 
+    template<typename C, typename V>
+    struct setter {
+        static void set(Node<C> *node, V val) {
+            node->template set<V>(val);
+        }
+    };
+
     template<typename C, typename T>
     struct as_if_convert {
         explicit as_if_convert(const Node<C> &node_) : node(node_) {}
@@ -228,6 +235,19 @@ namespace UYAML {
             return node.get(index);
         }
     };
+
+
+    template<typename C, typename V>
+    struct as_if_set {
+        explicit as_if_set(Node<C> *node_) : node(node_) {}
+
+        Node<C> *node;
+
+        void operator()(V val) const {
+            setter<C, V>::set(node, val);
+        }
+    };
+
 }// namespace UYAML
 
 #define IMPL_CONVERTER_STR(c) IMPL_CONVERTER(c, str<c>, { \
