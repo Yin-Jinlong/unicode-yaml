@@ -1,2 +1,3 @@
 * text=auto
 .clang-format text=auto eol=lf
+.clang-tidy text=auto eol=lf
