@@ -4,16 +4,27 @@
 
 #include <regex>
 
-#define IMPL_CONVERTER(c, t, toFn)                          \
-    template<>                                              \
-    struct converter<c, t> : private converter_helper<c> {  \
-        static t to(const Node<c> &node, t def) {           \
+#define UYAML_IMPL_CONVERTER(t, toFn)                             \
+    template<typename C>                                    \
+    struct converter<C, t> : private converter_helper<C> {  \
+        static t to(const Node<C> &node, t def) {           \
             auto type = node.Type();                        \
             auto value = node.ValueRaw();                   \
             toFn                                            \
         }                                                   \
-        static Node<c> from(t val) { return Node<c>(val); } \
+        static Node<C> from(t val) { return Node<C>(val); } \
     }
+
+
+#define UYAML_IMPL_CONVERTER_TRY_DEF(t, vt) UYAML_IMPL_CONVERTER(t, { \
+    vt r;                                                 \
+    if (try_convert(type, value, r))                      \
+        return r;                                         \
+    return def;                                           \
+})
+
+#define UYAML_IMPL_CONVERTER_INT(t) UYAML_IMPL_CONVERTER_TRY_DEF(t, int64_t)
+#define UYAML_IMPL_CONVERTER_FLOAT(t) UYAML_IMPL_CONVERTER_TRY_DEF(t, double)
 
 namespace UYAML {
 
@@ -248,33 +259,22 @@ namespace UYAML {
         }
     };
 
+    UYAML_IMPL_CONVERTER_TRY_DEF(bool, bool);
+
+    UYAML_IMPL_CONVERTER_INT(int8_t);
+    UYAML_IMPL_CONVERTER_INT(uint8_t);
+    UYAML_IMPL_CONVERTER_INT(int16_t);
+    UYAML_IMPL_CONVERTER_INT(uint16_t);
+    UYAML_IMPL_CONVERTER_INT(int32_t);
+    UYAML_IMPL_CONVERTER_INT(uint32_t);
+    UYAML_IMPL_CONVERTER_INT(int64_t);
+
+    UYAML_IMPL_CONVERTER_FLOAT(float);
+    UYAML_IMPL_CONVERTER_FLOAT(double);
+
+    UYAML_IMPL_CONVERTER(str<C>, {
+        if (type == ValueType::String)
+            return value->s;
+        return def;
+    });
 }// namespace UYAML
-
-#define IMPL_CONVERTER_STR(c) IMPL_CONVERTER(c, str<c>, { \
-    if (type == ValueType::String)                        \
-        return value->s;                                  \
-    return def;                                           \
-})
-
-#define IMPL_CONVERTER_TRY_DEF(c, t, vt) IMPL_CONVERTER(c, t, { \
-    vt r;                                                       \
-    if (try_convert(type, value, r))                            \
-        return r;                                               \
-    return def;                                                 \
-})
-
-#define IMPL_CONVERTER_INT(c, t) IMPL_CONVERTER_TRY_DEF(c, t, int64_t)
-#define IMPL_CONVERTER_FLOAT(c, t) IMPL_CONVERTER_TRY_DEF(c, t, double)
-
-#define IMPL_CONVERTER_INTS(c)       \
-    IMPL_CONVERTER_INT(c, int8_t);   \
-    IMPL_CONVERTER_INT(c, uint8_t);  \
-    IMPL_CONVERTER_INT(c, int16_t);  \
-    IMPL_CONVERTER_INT(c, uint16_t); \
-    IMPL_CONVERTER_INT(c, int32_t);  \
-    IMPL_CONVERTER_INT(c, uint32_t); \
-    IMPL_CONVERTER_INT(c, int64_t)
-
-#define IMPL_CONVERTER_FLOATS(c)    \
-    IMPL_CONVERTER_FLOAT(c, float); \
-    IMPL_CONVERTER_FLOAT(c, double)

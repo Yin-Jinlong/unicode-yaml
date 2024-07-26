@@ -188,7 +188,7 @@ namespace UYAML {
 #undef CONSTRUCTOR
 #undef CONSTRUCTOR_CAST
 
-        explicit Node(const std::vector<Node<C> *> list) {
+        explicit Node(const std::vector<std::shared_ptr<Node<C>>> list) {
             type = ValueType::List;
             value = new Value<C>(new std::vector<Node<C> *>());
             for (auto &i: list) {
@@ -198,7 +198,7 @@ namespace UYAML {
             value->list->shrink_to_fit();
         }
 
-        explicit Node(const std::map<str<C>, Node<C> *> &obj) {
+        explicit Node(const std::map<str<C>, std::shared_ptr<Node<C>>> obj) {
             type = ValueType::Object;
             value = new Value<C>(new std::map<str<C>, Node<C> *>());
             for (auto &i: obj) {

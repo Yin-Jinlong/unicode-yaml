@@ -11,7 +11,7 @@ namespace UYAML {
         int64_t i;
         double f;
         str<C> s;
-        std::vector<std::shared_ptr<Node<C>>> list;
+        std::vector<std::shared_ptr<Node<C>>> *list;
         std::map<str<C>, std::shared_ptr<Node<C>>> *obj;
 
     public:

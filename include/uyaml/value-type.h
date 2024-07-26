@@ -1,7 +1,9 @@
 #pragma once
 
+#include "dll.h"
+
 namespace UYAML {
-    enum ValueType {
+    enum UYAML_API ValueType {
         Null,
         Bool,
         Int,
