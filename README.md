@@ -57,8 +57,9 @@ int main() {
 类型转换
 
 ```c++
-bool b=node.asBool(false);
-auto b=node.as<MyClass>({});
+bool b = node.asBool(false);
+bool i = node.asInt();
+auto b = node.as<MyClass>({});
 ```
 
 自定义类型需要实现模板
@@ -68,7 +69,7 @@ auto b=node.as<MyClass>({});
 
 ```c++
 template<>
-struct converter<C, T> {
+struct UYAML::converter<C, T> {
     static T to(const Node<c> &node, T def) {
         // TODO
     }
