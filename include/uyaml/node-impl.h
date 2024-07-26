@@ -6,7 +6,7 @@
 
 #define UYAML_IMPL_CONVERTER(t, toFn)                       \
     template<typename C>                                    \
-    struct converter<C, t> : private converter_helper<C> {  \
+    struct converter<C, t> {                                \
         static t to(const Node<C> &node, t def) {           \
             auto type = node.Type();                        \
             auto value = node.ValueRaw();                   \
@@ -16,11 +16,9 @@
     }
 
 
-#define UYAML_IMPL_CONVERTER_TRY_DEF(t, vt) UYAML_IMPL_CONVERTER(t, { \
-    vt r;                                                             \
-    if (try_convert(type, value, r))                                  \
-        return r;                                                     \
-    return def;                                                       \
+#define UYAML_IMPL_CONVERTER_TRY_DEF(t, vt) UYAML_IMPL_CONVERTER(t, {  \
+    vt r;                                                              \
+    return converter_helper<C>::try_convert(type, value, r) ? r : def; \
 })
 
 #define UYAML_IMPL_STR_CONVERTER(t, pt)                  \
