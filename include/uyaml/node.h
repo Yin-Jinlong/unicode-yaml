@@ -262,15 +262,15 @@ namespace UYAML {
             return type == ValueType::String ? value->s : str<C>();
         }
 
-#define AS_DEF(t, N)       \
-    t as##N(t def) {       \
+#define AS_DEF(t, N, d)    \
+    t as##N(t def = d) {   \
         return as<t>(def); \
     }
 
-        AS_DEF(bool, Bool)
-        AS_DEF(int64_t, Int)
-        AS_DEF(double, Float)
-        AS_DEF(str<C>, String)
+        AS_DEF(bool, Bool, false)
+        AS_DEF(int64_t, Int, 0)
+        AS_DEF(double, Float, 0)
+        AS_DEF(str<C>, String, str<C>())
 
 #undef AS_DEF
         str<C> asStr(const str<C> &def) {
