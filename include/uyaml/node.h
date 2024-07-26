@@ -285,6 +285,33 @@ namespace UYAML {
             return type == ValueType::Object ? value->obj : std::map<str<C>, Node<C> *>();
         }
 
+        template<typename T>
+        bool convertNode() {
+            if (type != String)
+                throw std::runtime_error("Only string can be convert to another type");
+            return as_if_convert<C, T>::convert(this);
+        }
+
+        /**
+         * @brief 将本节点转换为字符串节点
+         * @throw std::format_error 如果是List或Object类型
+         */
+        void convertToStrNode() {
+            if (type == ValueType::Null)
+                return set();
+            if (type == ValueType::String)
+                return;
+            switch (type) {
+                case Bool:
+                    return as_if_convert<C, bool>::toStr(value->b);
+                case Int:
+                    return as_if_convert<C, int64_t>::toStr(value->i);
+                case Float:
+                    return as_if_convert<C, double>::toStr(value->f);
+                default:
+                    throw std::format_error("object & list could not be converted to string");
+            }
+        }
         /**
          * @brief 获取子节点，本节点必须是Object或Null类型，如果是Null类型则会转换成Object类型
          * @param key 节点名
@@ -356,6 +383,7 @@ namespace UYAML {
 
         void set() {
             cleanValue();
+            type = ValueType ::Null;
             value = new Value<C>();
         }
 

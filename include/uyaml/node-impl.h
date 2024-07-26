@@ -4,7 +4,7 @@
 
 #include <regex>
 
-#define UYAML_IMPL_CONVERTER(t, toFn)                             \
+#define UYAML_IMPL_CONVERTER(t, toFn)                       \
     template<typename C>                                    \
     struct converter<C, t> : private converter_helper<C> {  \
         static t to(const Node<C> &node, t def) {           \
@@ -17,11 +17,39 @@
 
 
 #define UYAML_IMPL_CONVERTER_TRY_DEF(t, vt) UYAML_IMPL_CONVERTER(t, { \
-    vt r;                                                 \
-    if (try_convert(type, value, r))                      \
-        return r;                                         \
-    return def;                                           \
+    vt r;                                                             \
+    if (try_convert(type, value, r))                                  \
+        return r;                                                     \
+    return def;                                                       \
 })
+
+#define UYAML_IMPL_STR_CONVERTER(t, pt)                  \
+    template<typename C>                                 \
+    struct str_converter<C, t> {                         \
+        static bool convert(Node<C> *node) {             \
+            auto s = node->asString();                   \
+            if (s.empty())                               \
+                return false;                            \
+            t r;                                         \
+            if (converter_helper<C>::parse_##pt(s, r)) { \
+                node->set(r);                            \
+                return true;                             \
+            }                                            \
+            return false;                                \
+        }                                                \
+    };
+
+#define UYAML_IMPL_TOSTR_NUM_CONVERTER(t)      \
+    template<typename C>                       \
+    struct tostr_converter<C, t> {             \
+        static str<C> toStr(t v) {             \
+            std::string s = std::to_string(v); \
+            str<C> r;                          \
+            for (auto c: s)                    \
+                r += c;                        \
+            return r;                          \
+        }                                      \
+    };
 
 #define UYAML_IMPL_CONVERTER_INT(t) UYAML_IMPL_CONVERTER_TRY_DEF(t, int64_t)
 #define UYAML_IMPL_CONVERTER_FLOAT(t) UYAML_IMPL_CONVERTER_TRY_DEF(t, double)
@@ -33,6 +61,14 @@ namespace UYAML {
 
     template<typename C, typename T>
     struct converter {
+    };
+
+    template<typename C, typename T>
+    struct str_converter {
+    };
+
+    template<typename C, typename T>
+    struct tostr_converter {
     };
 
     template<typename C, typename K>
@@ -51,6 +87,14 @@ namespace UYAML {
         explicit as_if_convert(const Node<C> &node_) : node(node_) {}
 
         const Node<C> &node;
+
+        static bool convert(Node<C> *node) {
+            return str_converter<C, T>::convert(node);
+        }
+
+        static str<C> toStr(T val) {
+            return tostr_converter<C, T>::toStr(val);
+        }
 
         T operator[](T def) const {
             return converter<C, T>::to(node, def);
@@ -96,6 +140,27 @@ namespace UYAML {
         }
 
     public:
+        static bool parse_bool(const str<C> &s, bool &out) {
+            static std::regex trueReg("true|on|yes");
+            static std::regex falseReg("false|off|no");
+
+            if (s.length() < 2 || s.length() > 5)
+                return false;
+            str<C> r;
+            if (!wordToLower(s, r))
+                return false;
+            str<char> ascii;
+            if (!to_ascii_cstr(r, ascii))
+                return false;
+            if (std::regex_match(ascii, trueReg))
+                out = true;
+            else if (std::regex_match(ascii, falseReg))
+                out = false;
+            else
+                return false;
+            return true;
+        }
+
         static bool parse_int(const str<C> &s, int64_t &out) {
             if (s.empty())
                 return false;
@@ -143,9 +208,6 @@ namespace UYAML {
         }
 
         static bool try_convert(ValueType t, const Value<C> *v, bool &out) {
-            static std::regex trueReg("true|on|yes");
-            static std::regex falseReg("false|off|no");
-
             switch (t) {
                 case Bool:
                     out = v->b;
@@ -158,21 +220,7 @@ namespace UYAML {
                     break;
                 case String: {
                     auto s = v->s;
-                    if (s.length() < 2 || s.length() > 5)
-                        return false;
-                    str<C> r;
-                    if (!wordToLower(s, r))
-                        return false;
-                    str<char> ascii;
-                    if (!to_ascii_cstr(r, ascii))
-                        return false;
-                    if (std::regex_match(ascii, trueReg))
-                        out = true;
-                    else if (std::regex_match(ascii, falseReg))
-                        out = false;
-                    else
-                        return false;
-                    break;
+                    return parse_bool(s, out);
                 }
                 default:
                     return false;
@@ -277,4 +325,31 @@ namespace UYAML {
             return value->s;
         return def;
     });
+
+    UYAML_IMPL_STR_CONVERTER(bool, bool)
+    UYAML_IMPL_STR_CONVERTER(int8_t, int)
+    UYAML_IMPL_STR_CONVERTER(uint8_t, int)
+    UYAML_IMPL_STR_CONVERTER(int16_t, int)
+    UYAML_IMPL_STR_CONVERTER(uint16_t, int)
+    UYAML_IMPL_STR_CONVERTER(int32_t, int)
+    UYAML_IMPL_STR_CONVERTER(uint32_t, int)
+    UYAML_IMPL_STR_CONVERTER(int64_t, int)
+    UYAML_IMPL_STR_CONVERTER(float, float)
+    UYAML_IMPL_STR_CONVERTER(double, float)
+
+    template<typename C>
+    struct tostr_converter<C, bool> {
+        static str<C> toStr(bool v) {
+            static std::string s[2] = {"true", "false"};
+            str<C> r;
+            int i = v ? 1 : 0;
+            for (auto c: s[i])
+                r += c;
+            return r;
+        }
+    };
+
+    UYAML_IMPL_TOSTR_NUM_CONVERTER(int64_t)
+    UYAML_IMPL_TOSTR_NUM_CONVERTER(float)
+    UYAML_IMPL_TOSTR_NUM_CONVERTER(double)
 }// namespace UYAML

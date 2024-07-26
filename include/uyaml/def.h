@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <xstring>
+#include <memory>
 
 #include "value-type.h"
 
